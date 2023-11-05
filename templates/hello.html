@@ -1,0 +1,20 @@
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block title %}Hello!{% endblock %}
+
+{% block content %}
+ <form id='form'  hx-target="#file" hx-encoding='multipart/form-data' hx-post='/file'>
+        <input type='file' name='file' id='file'>
+        <button>
+            Upload
+        </button>
+        <progress id='progress' value='0' max='100'></progress>
+    </form>
+    <script>
+        htmx.on('#form', 'htmx:xhr:progress', function(evt) {
+          htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
+        });
+    </script>
+{% endblock %}
+
