@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
 
     info!("router initialized, now listening on port {}", port);
-
+    //add tailwind
     axum::Server::bind(&addr)
         .serve(router.into_make_service())
         .await

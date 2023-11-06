@@ -1,8 +1,9 @@
+//handle all torrent related structs for code redability
 use serde_bytes::ByteBuf;
 use serde_derive::{Deserialize, Serialize};
 #[derive(Debug, Deserialize)]
 pub struct Node(String, i64);
-
+//for parsing file type in bencode encoding
 #[derive(Debug, Deserialize)]
 pub struct File {
     pub path: Vec<String>,
@@ -10,7 +11,7 @@ pub struct File {
     #[serde(default)]
     pub md5sum: Option<String>,
 }
-
+//main file info decoding
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct Info {
@@ -32,7 +33,7 @@ pub struct Info {
     #[serde(rename = "root hash")]
     pub root_hash: Option<String>,
 }
-
+//torrent bytes into this
 #[derive(Debug, Deserialize)]
 pub struct Torrent {
     pub info: Info,
