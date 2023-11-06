@@ -7,14 +7,14 @@ use axum::{
     routing::{get, post},
     Router,
 };
+mod structs;
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
+use serde_bytes::ByteBuf;
+use serde_derive::{Deserialize, Serialize};
 
 use std::sync::{Arc, Mutex};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-struct AppState {
-    todos: Mutex<Vec<String>>,
-}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -28,14 +28,9 @@ async fn main() -> anyhow::Result<()> {
 
     info!("initializing router...");
 
-    let app_state = Arc::new(AppState {
-        todos: Mutex::new(vec![]),
-    });
-
     let router = Router::new()
         .route("/", get(hello))
-        .route("/file", post(handle_fl))
-        .with_state(app_state);
+        .route("/file", post(handle_fl));
     let port = 8000_u16;
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
 
@@ -57,7 +52,8 @@ struct Fl {
 }
 
 async fn handle_fl(data: TypedMultipart<Fl>) -> StatusCode {
-    info!("{:?}", data.file);
+    let decode: structs::Torrent = serde_bencode::from_bytes(&data.file.contents).unwrap();
+    info!("{:?}", decode.info.name);
     StatusCode::OK
 }
 //server the file upload
