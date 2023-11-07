@@ -7,6 +7,9 @@ use axum::{
     routing::{get, post},
     Router,
 };
+
+use sha1::{Digest, Sha1};
+
 mod structs;
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use serde_bytes::ByteBuf;
@@ -15,6 +18,10 @@ use serde_derive::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+struct AppState {
+    file: Mutex<Vec<String>>,
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -28,9 +35,13 @@ async fn main() -> anyhow::Result<()> {
 
     info!("initializing router...");
 
+    let app_state = Arc::new(AppState {
+        file: Mutex::new(vec![]),
+    });
     let router = Router::new()
         .route("/", get(hello))
-        .route("/file", post(handle_fl));
+        .route("/file", post(handle_fl))
+        .with_state(app_state);
     let port = 8000_u16;
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
 
@@ -50,11 +61,24 @@ async fn main() -> anyhow::Result<()> {
 struct Fl {
     file: FieldData<Bytes>,
 }
+#[derive(Template)]
+#[template(path = "name.html")]
+struct NameTemplate {
+    name: String,
+    peers: String,
+}
 
-async fn handle_fl(data: TypedMultipart<Fl>) -> StatusCode {
+async fn handle_fl(data: TypedMultipart<Fl>) -> impl IntoResponse {
     let decode: structs::Torrent = serde_bencode::from_bytes(&data.file.contents).unwrap();
-    info!("{:?}", decode.info.name);
-    StatusCode::OK
+    let enco_info = serde_bencode::to_bytes(&decode.info).unwrap();
+    let mut hasher = Sha1::new();
+    hasher.update(enco_info);
+    let res = hasher.finalize();
+    let hx = NameTemplate {
+        name: decode.info.name,
+        peers: hex::encode(res),
+    };
+    hx.render().unwrap()
 }
 //server the file upload
 async fn hello() -> impl IntoResponse {

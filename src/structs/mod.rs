@@ -4,7 +4,7 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Debug, Deserialize)]
 pub struct Node(String, i64);
 //for parsing file type in bencode encoding
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct File {
     pub path: Vec<String>,
     pub length: i64,
@@ -13,7 +13,7 @@ pub struct File {
 }
 //main file info decoding
 #[allow(dead_code)]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
     pub name: String,
     pub pieces: ByteBuf,
