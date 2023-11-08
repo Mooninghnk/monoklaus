@@ -22,7 +22,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 struct AppState {
     file: Mutex<Vec<String>>,
 }
-
+//write hash map for all the hashes
+//upload the test version 0.0.3
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
